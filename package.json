@@ -1,6 +1,6 @@
 {
   "name": "lawos",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Wrapper to process messages in SQS queue.",
   "main": "index.js",
   "homepage": "https://github.com/sbstjn/lawos",
