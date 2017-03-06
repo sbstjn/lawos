@@ -35,8 +35,6 @@ class Lawos {
   }
 
   delete(message) {
-    console.log('deleting', message.ReceiptHandle.substr(0, 40));
-
     return SQS.deleteMessage(
       {
         QueueUrl: this.queueName,
