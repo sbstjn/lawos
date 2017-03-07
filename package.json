@@ -2,15 +2,16 @@
   "name": "lawos",
   "version": "0.0.2",
   "description": "Wrapper to process messages in SQS queue.",
-  "main": "index.js",
+  "main": "src/main.js",
   "homepage": "https://github.com/sbstjn/lawos",
   "repository": {
     "type": "git",
     "url": "https://github.com/sbstjn/lawos.git"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha spec.js",
-    "test:watch": "./node_modules/.bin/mocha spec.js -w"
+    "test": "./node_modules/.bin/jest test",
+    "test:cover": "./node_modules/.bin/jest test --coverage",
+    "test:watch": "./node_modules/.bin/jest test --watch --notify"
   },
   "keywords": [
     "aws",
@@ -21,7 +22,6 @@
   "license": "MIT",
   "devDependencies": {
     "aws-sdk": "^2.22.0",
-    "chai": "^3.5.0",
-    "mocha": "^3.2.0"
+    "jest": "^19.0.2"
   }
 }

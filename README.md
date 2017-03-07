@@ -9,22 +9,37 @@ Simple library to use an AWS Lambda function to process entries in an SQS queue.
 ## Usage
 
 ```js
-module.exports.handler = function(event, context, callback) {
-  require('lawos').work(
-    'https://sqs.eu-west-1.amazonaws.com/12345678900/lawos-queue', {
-      step: 10
-    }
-  ).action(
-    message => new Promise(done => {
-      console.log('processing', message.MessageId);
+const Lawos = require('lawos');
+const AWS = require('aws-sdk');
+const SQS = new AWS.SQS({apiVersion: '2012-11-05'});
 
-      done(message);
-    })
-  ).continue(
-    () => context.getRemainingTimeInMillis() > 500
+const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/xYz/test');
+Q.data(SQS);
+
+Q.item(item => new Promise(done => {
+  console.log('Processed message', item.MessageId);
+
+  done();
+}));
+
+Q.list(list => new Promise(done => {
+  console.log('Processed list of', list.length, 'messages');
+
+  done();
+}));
+
+module.exports.handler = function(event, context, callback) {
+  Q.work(
+    () => {
+      if (context.getRemainingTimeInMillis() > 500) {
+        return Promise.resolve();
+      } else {
+        return Promise.reject();
+      }
+    }
   ).then(
-    count => {
-      console.log("Processed", count, "messages.");
+    data => {
+      callback(null, data);
     }
   );
 };
