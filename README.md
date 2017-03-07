@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/lawos.svg)](https://www.npmjs.com/package/lawos)
 [![license](https://img.shields.io/github/license/sbstjn/lawos.svg)](https://github.com/sbstjn/lawos/blob/master/LICENSE.md)
 [![CircleCI](https://img.shields.io/circleci/project/github/sbstjn/lawos/master.svg)](https://circleci.com/gh/sbstjn/lawos)
-[![Coveralls](https://img.shields.io/coveralls/sbsjtn/lawos.svg)](https://coveralls.io/github/sbstjn/lawos)
+[![Coveralls](https://img.shields.io/coveralls/sbstjn/lawos.svg)](https://coveralls.io/github/sbstjn/lawos)
 
 Simple library to use an AWS Lambda function to process entries in an SQS queue. No tests available due to missing SQS mock, and lousy dependency handling of this library.
 
