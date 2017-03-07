@@ -5,7 +5,13 @@
 [![CircleCI](https://img.shields.io/circleci/project/github/sbstjn/lawos/master.svg)](https://circleci.com/gh/sbstjn/lawos)
 [![Coveralls](https://img.shields.io/coveralls/sbstjn/lawos.svg)](https://coveralls.io/github/sbstjn/lawos)
 
-Simple library to use an AWS Lambda function to process entries in an SQS queue. No tests available due to missing SQS mock, and lousy dependency handling of this library.
+Wrapper library to process messages from an Amazon SQS queue with an AWS Lambda worker function or just using your favorite other Node.js environment.
+
+## Install
+
+```bash
+$ > npm install lawos
+```
 
 ## Usage
 
