@@ -1,0 +1,5 @@
+test:
+  override:
+    - npm run test:cover
+  post:
+    - npm run coveralls
