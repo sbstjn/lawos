@@ -20,31 +20,30 @@ const Lawos = require('lawos');
 const AWS = require('aws-sdk');
 const SQS = new AWS.SQS({apiVersion: '2012-11-05'});
 
-const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/xYz/test');
-Q.data(SQS);
+const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/xYz/test', SQS);
 
-Q.item(item => new Promise(done => {
-  console.log('Processed message', item.MessageId);
+Q.item(
+  item => new Promise(done => {
+    console.log('Processed message', item.MessageId);
 
-  done();
-}));
+    done();
+  })
+).list(
+  list => new Promise(done => {
+    console.log('Processed list of', list.length, 'messages');
 
-Q.list(list => new Promise(done => {
-  console.log('Processed list of', list.length, 'messages');
-
-  done();
-}));
+    done();
+  })
+);
 
 module.exports.handler = function(event, context, callback) {
-  Q.work(
-    () => {
-      if (context.getRemainingTimeInMillis() > 500) {
-        return Promise.resolve();
-      } else {
-        return Promise.reject();
-      }
+  Q.work(() => {
+    if (context.getRemainingTimeInMillis() > 500) {
+      return Promise.resolve();
+    } else {
+      return Promise.reject();
     }
-  ).then(
+  }).then(
     data => {
       callback(null, data);
     }

@@ -1,9 +1,10 @@
 'use strict';
 
 class Lawos {
-  constructor(queueUrl) {
+  constructor(queueUrl, sqs) {
     this.maxMessages = 10;
     this.queueUrl = queueUrl;
+    this.sqs = sqs;
 
     this.handler = {
       item: data => Promise.resolve(),
@@ -45,12 +46,6 @@ class Lawos {
     ).then(
       list => list && list.Messages || this.quit()
     )
-  }
-
-  data(sqs) {
-    this.sqs = sqs;
-
-    return this;
   }
 
   list(func) {

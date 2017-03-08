@@ -50,13 +50,9 @@ it('can set list handler', () => {
 });
 
 it('can configure SQS handler', () => {
-  const Q = new Lawos('http://example.com');
-
-  Q.data(
-    {
-      test: true
-    }
-  );
+  const Q = new Lawos('http://example.com', {
+    test: true
+  });
 
   expect(Q.sqs.test).toBeTruthy();
 });
@@ -64,9 +60,7 @@ it('can configure SQS handler', () => {
 it('calls receiveMessage', () => {
   var counterReceive = 0;
 
-  const Q = new Lawos('http://example.com');
-
-  Q.data({
+  const Q = new Lawos('http://example.com', {
     receiveMessage: params => {
       return {
         promise: () => new Promise(done => {
@@ -84,9 +78,7 @@ it('calls receiveMessage', () => {
 });
 
 it('calls deleteMessage', () => {
-  const Q = new Lawos('http://example.com');
-
-  Q.data({
+  const Q = new Lawos('http://example.com', {
     deleteMessage: params => {
       return {
         promise: () => new Promise(done => {
@@ -118,25 +110,7 @@ it('work runs condition check and loads data', () => {
   let counterProcessedList = 0;
   let counterDelete = 0;
 
-  const Q = new Lawos('http://example.com');
-
-  Q.item(
-    item => new Promise(done => {
-      counterProcessed += 1;
-
-      done();
-    })
-  );
-
-  Q.list(
-    list => new Promise(done => {
-      counterProcessedList += 1;
-
-      done();
-    })
-  );
-
-  Q.data({
+  const Q = new Lawos('http://example.com', {
     receiveMessage: params => {
       return {
         promise: () => new Promise(done => {
@@ -156,6 +130,22 @@ it('work runs condition check and loads data', () => {
       }
     }
   });
+
+  Q.item(
+    item => new Promise(done => {
+      counterProcessed += 1;
+
+      done();
+    })
+  );
+
+  Q.list(
+    list => new Promise(done => {
+      counterProcessedList += 1;
+
+      done();
+    })
+  );
 
   return Q.work(
     () => {
