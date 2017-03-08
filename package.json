@@ -1,6 +1,6 @@
 {
   "name": "lawos",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Wrapper for Amazon SQS Worker with AWS Lambda",
   "main": "src/main.js",
   "homepage": "https://github.com/sbstjn/lawos",
