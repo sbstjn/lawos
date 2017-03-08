@@ -13,6 +13,10 @@ Wrapper library to process messages from an Amazon SQS queue with an AWS Lambda 
 $ > npm install lawos
 ```
 
+## Example
+
+See [lawos-serverless](https://github.com/sbstjn/lawos-serverless) for an example of Lawos using [Serverless](http://serverless.com).
+
 ## Usage
 
 ```js
