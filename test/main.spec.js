@@ -177,8 +177,7 @@ it('process real queue', () => {
   const AWS = require('aws-sdk');
   const SQS = new AWS.SQS({apiVersion: '2012-11-05'});
 
-  const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/xYz/test');
-  Q.data(SQS);
+  const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/xYz/test', SQS);
 
   Q.item(item => new Promise(done => {
     console.log(item.MessageId);
