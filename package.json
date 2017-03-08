@@ -9,10 +9,12 @@
     "url": "https://github.com/sbstjn/lawos.git"
   },
   "scripts": {
+    "pretest": "npm run lint",
     "test": "./node_modules/.bin/jest test",
     "test:cover": "./node_modules/.bin/jest test --coverage",
     "test:watch": "./node_modules/.bin/jest test --watch --notify",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "lint": "./node_modules/.bin/eslint src"
   },
   "keywords": [
     "aws",
@@ -25,6 +27,11 @@
   "devDependencies": {
     "aws-sdk": "^2.22.0",
     "coveralls": "^2.12.0",
+    "eslint": "^3.17.1",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.10.0",
     "jest": "^19.0.2"
   }
 }
