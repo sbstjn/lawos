@@ -19,6 +19,8 @@ See [lawos-serverless](https://github.com/sbstjn/lawos-serverless) for an exampl
 
 ## Usage
 
+### Promise for every message
+
 ```js
 const AWS = require('aws-sdk');
 const SQS = new AWS.SQS({apiVersion: '2012-11-05'});
@@ -31,6 +33,57 @@ Q.item(
     done();
   })
 );
+
+module.exports.handler = function(event, context, callback) {
+  Q.work(
+    () = Promise.resolve(context.getRemainingTimeInMillis() < 500)
+  ).then(
+    data => {
+      callback(null, data);
+    }
+  );
+};
+```
+
+### Promise for a batch of messages
+
+```js
+const AWS = require('aws-sdk');
+const SQS = new AWS.SQS({apiVersion: '2012-11-05'});
+
+const Lawos = require('lawos');
+const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com …', SQS);
+
+Q.list(
+  list => new Promise(done => {
+    done();
+  })
+);
+
+module.exports.handler = function(event, context, callback) {
+  Q.work(
+    () = Promise.resolve(context.getRemainingTimeInMillis() < 500)
+  ).then(
+    data => {
+      callback(null, data);
+    }
+  );
+};
+```
+
+### Use AWS Lambda instead of Promise
+
+```js
+const AWS = require('aws-sdk');
+const Lawos = require('lawos');
+
+const Lambda = new AWS.Lambda({apiVersion: '2015-03-31'});
+const SQS = new AWS.SQS({apiVersion: '2012-11-05'});
+
+const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com …', SQS, Lambda);
+
+Q.item('fake-function-name');
+// Q.list('fake-function-name');
 
 module.exports.handler = function(event, context, callback) {
   Q.work(
