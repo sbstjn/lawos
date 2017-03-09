@@ -1,3 +1,5 @@
+'use strict';
+
 class Lawos {
   constructor(queueUrl, sqs) {
     this.maxMessages = 10;
