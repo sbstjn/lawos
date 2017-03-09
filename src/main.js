@@ -1,10 +1,10 @@
 'use strict';
 
 class Lawos {
-  constructor(queueUrl, sqs) {
+  constructor(queueUrl, sqs, lambda) {
     this.maxMessages = 10;
     this.queueUrl = queueUrl;
-    this.sqs = sqs;
+    this.aws = {sqs: sqs, lambda: lambda};
 
     this.handler = {
       item: () => Promise.resolve(),
@@ -21,8 +21,39 @@ class Lawos {
     }
   }
 
+  __invoke(arn, data) {
+    return new Promise(done => {
+      this.aws.lambda.invoke(
+        {
+          FunctionName: arn,
+          InvocationType: 'Event',
+          LogType: 'None'
+        },
+        (err, res) => {
+          done(res);
+        }
+      );
+    })
+  }
+
+  __item(item) {
+    if (typeof this.handler.item === 'string') {
+      return this.__invoke(this.handler.item, item);
+    }
+
+    return this.handler.item(item);
+  }
+
+  __list(list) {
+    if (typeof this.handler.list === 'string') {
+      return this.__invoke(this.handler.list, list);
+    }
+
+    return this.handler.list(list);
+  }
+
   delete(id) {
-    return this.sqs.deleteMessage(
+    return this.aws.sqs.deleteMessage(
       {
         QueueUrl: this.queueUrl,
         ReceiptHandle: id,
@@ -31,7 +62,7 @@ class Lawos {
   }
 
   load() {
-    return this.sqs.receiveMessage(
+    return this.aws.sqs.receiveMessage(
       {
         MaxNumberOfMessages: this.maxMessages,
         MessageAttributeNames: ['All'],
@@ -66,13 +97,13 @@ class Lawos {
         item => {
           this.metrics.processed += 1;
 
-          return this.handler.item(item);
+          return this.__item(item);
         }
       )
     ).then(
       () => list
     ).then(
-      this.handler.list
+      list => this.__list(list)
     ).then(
       Promise.all(
         list.map(

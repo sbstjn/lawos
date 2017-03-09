@@ -54,7 +54,7 @@ it('can configure SQS handler', () => {
     test: true
   });
 
-  expect(Q.sqs.test).toBeTruthy();
+  expect(Q.aws.sqs.test).toBeTruthy();
 });
 
 it('calls receiveMessage', () => {
@@ -332,6 +332,60 @@ it('work runs condition check and loads data', () => {
     () => expect(counterDelete).toBe(10)
   ).then(
     () => expect(counterProcessedList).toBe(5)
+  );
+});
+
+it('trigger Lambda task to process message', () => {
+  let counterCalled = 0;
+  let counterDelete = 0;
+  let counterProcessed = 0;
+  let counterLambda = 0;
+
+  let data = [[{}, {}, {}]];
+
+  const Q = new Lawos('http://example.com', {
+    receiveMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterCalled += 1;
+
+          done({Messages: data.pop()});
+        })
+      }
+    },
+    deleteMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterDelete += 1;
+
+          done();
+        })
+      }
+    }
+  }, {
+    invoke: (params, callback) => {
+      counterLambda += 1;
+
+      expect(params.FunctionName).toBe('fake-function-name');
+
+      callback(null, {done: true});
+    }
+  });
+
+  Q.item('fake-function-name');
+
+  return Q.work(
+    () => Promise.resolve()
+  ).then(
+    () => expect(Q.metrics.processed).toBe(3)
+  ).then(
+    () => expect(Q.metrics.iteration).toBe(2)
+  ).then(
+    () => expect(counterLambda).toBe(3)
+  ).then(
+    () => expect(counterDelete).toBe(3)
+  ).then(
+    () => expect(counterCalled).toBe(2)
   );
 });
 
