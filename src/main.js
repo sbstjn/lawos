@@ -4,7 +4,10 @@ class Lawos {
   constructor(queueUrl, sqs, lambda) {
     this.maxMessages = 10;
     this.queueUrl = queueUrl;
-    this.aws = {sqs: sqs, lambda: lambda};
+    this.aws = {
+      sqs: sqs,
+      lambda: lambda
+    };
 
     this.handler = {
       item: () => Promise.resolve(),
@@ -34,7 +37,7 @@ class Lawos {
           done(err || res);
         }
       );
-    })
+    });
   }
 
   handleKey(key, data) {
@@ -46,11 +49,11 @@ class Lawos {
   }
 
   handleItem(item) {
-    return this.handleKey('item', item)
+    return this.handleKey('item', item);
   }
 
   handleList(list) {
-    return this.handleKey('list', list)
+    return this.handleKey('list', list);
   }
 
   delete(id) {
@@ -104,7 +107,7 @@ class Lawos {
     ).then(
       () => list
     ).then(
-      list => this.handleList(list)
+      data => this.handleList(data)
     ).then(
       Promise.all(
         list.map(
