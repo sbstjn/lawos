@@ -100,9 +100,7 @@ class Lawos {
         );
       },
     ).catch(
-      () => {
-        return this.quit();
-      },
+      () => this.quit(),
     );
   }
 }
