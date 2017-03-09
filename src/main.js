@@ -88,13 +88,21 @@ class Lawos {
 
   work(condition) {
     return condition().then(
-      () => this.load().then(
-        list => this.process(list),
-      ).then(
-        () => this.work(condition),
-      ),
+      stop => {
+        if (stop) {
+          return this.quit();
+        }
+
+        return this.load().then(
+          list => this.process(list),
+        ).then(
+          () => this.work(condition),
+        );
+      },
     ).catch(
-      () => this.quit(),
+      () => {
+        return this.quit();
+      },
     );
   }
 }

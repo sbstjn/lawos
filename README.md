@@ -5,7 +5,7 @@
 [![CircleCI](https://img.shields.io/circleci/project/github/sbstjn/lawos/master.svg)](https://circleci.com/gh/sbstjn/lawos)
 [![Coveralls](https://img.shields.io/coveralls/sbstjn/lawos.svg)](https://coveralls.io/github/sbstjn/lawos)
 
-Wrapper library to process messages from an Amazon SQS queue with an AWS Lambda worker function or just using your favorite other Node.js environment.
+Library to process messages from an Amazon SQS queue with an AWS Lambda worker function or your favorite other JavaScript environment. Works fine with [Serverless](https://github.com/sbstjn/lawos-serverless) …
 
 ## Install
 
@@ -20,34 +20,22 @@ See [lawos-serverless](https://github.com/sbstjn/lawos-serverless) for an exampl
 ## Usage
 
 ```js
-const Lawos = require('lawos');
 const AWS = require('aws-sdk');
 const SQS = new AWS.SQS({apiVersion: '2012-11-05'});
 
-const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/xYz/test', SQS);
+const Lawos = require('lawos');
+const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com …', SQS);
 
 Q.item(
   item => new Promise(done => {
-    console.log('Processed message', item.MessageId);
-
-    done();
-  })
-).list(
-  list => new Promise(done => {
-    console.log('Processed list of', list.length, 'messages');
-
     done();
   })
 );
 
 module.exports.handler = function(event, context, callback) {
-  Q.work(() => {
-    if (context.getRemainingTimeInMillis() > 500) {
-      return Promise.resolve();
-    } else {
-      return Promise.reject();
-    }
-  }).then(
+  Q.work(
+    () = Promise.resolve(context.getRemainingTimeInMillis() < 500)
+  ).then(
     data => {
       callback(null, data);
     }

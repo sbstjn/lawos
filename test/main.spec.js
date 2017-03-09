@@ -93,13 +93,181 @@ it('calls deleteMessage', () => {
   );
 });
 
-it('work runs condition check and stops', () => {
-  const Q = new Lawos('http://example.com');
+it('stops with condition resolve(true)', () => {
+  let counterCalled = 0;
+  let counterDelete = 0;
+  let counterProcessed = 0;
+
+  const Q = new Lawos('http://example.com', {
+    receiveMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterCalled += 1;
+
+          done({Messages: [{}, {}]});
+        })
+      }
+    },
+    deleteMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterDelete += 1;
+
+          done();
+        })
+      }
+    }
+  });
+
+  Q.item(
+    item => new Promise(done => {
+      counterProcessed += 1;
+
+      done();
+    })
+  );
+
+  return Q.work(
+    () => Promise.resolve(true)
+  ).then(
+    () => expect(Q.metrics.processed).toBe(0)
+  ).then(
+    () => expect(Q.metrics.iteration).toBe(0)
+  ).then(
+    () => expect(counterProcessed).toBe(0)
+  ).then(
+    () => expect(counterDelete).toBe(0)
+  ).then(
+    () => expect(counterCalled).toBe(0)
+  );
+});
+
+it('stops with condition reject()', () => {
+  let counterCalled = 0;
+  let counterDelete = 0;
+
+  const Q = new Lawos('http://example.com', {
+    receiveMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterCalled += 1;
+
+          done({Messages: [{}, {}]});
+        })
+      }
+    },
+    deleteMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterDelete += 1;
+
+          done();
+        })
+      }
+    }
+  });
+
+  Q.item(
+    item => new Promise(done => {
+      counterProcessed += 1;
+
+      done();
+    })
+  );
 
   return Q.work(
     () => Promise.reject()
   ).then(
-    data => expect(data.processed).toBe(0)
+    () => expect(Q.metrics.processed).toBe(0)
+  ).then(
+    () => expect(counterDelete).toBe(0)
+  );
+});
+
+it('continues continues condition resolve(false)', () => {
+  let counterCalled = 0;
+  let counterDelete = 0;
+  let counterProcessed = 0;
+
+  let data = [[{}, {}]];
+
+  const Q = new Lawos('http://example.com', {
+    receiveMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterCalled += 1;
+
+          done({Messages: data.pop()});
+        })
+      }
+    },
+    deleteMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterDelete += 1;
+
+          done();
+        })
+      }
+    }
+  });
+
+  Q.item(
+    item => new Promise(done => {
+      counterProcessed += 1;
+
+      done();
+    })
+  );
+
+  return Q.work(
+    () => Promise.resolve()
+  ).then(
+    () => expect(Q.metrics.processed).toBe(2)
+  );
+});
+
+it('continues continues condition resolve()', () => {
+  let counterCalled = 0;
+  let counterDelete = 0;
+
+  let data = [[{}, {}]];
+
+  const Q = new Lawos('http://example.com', {
+    receiveMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterCalled += 1;
+
+          done({Messages: data.pop()});
+        })
+      }
+    },
+    deleteMessage: params => {
+      return {
+        promise: () => new Promise(done => {
+          counterDelete += 1;
+
+          done();
+        })
+      }
+    }
+  });
+
+  Q.item(
+    item => new Promise(done => {
+      counterProcessed += 1;
+
+      done();
+    })
+  );
+
+  return Q.work(
+    () => Promise.resolve()
+  ).then(
+    () => expect(Q.metrics.processed).toBe(2)
+  ).then(
+    () => expect(counterDelete).toBe(2)
   );
 });
 
@@ -150,12 +318,7 @@ it('work runs condition check and loads data', () => {
   return Q.work(
     () => {
       counter -= 1;
-
-      if (counter >= 0) {
-        return Promise.resolve();
-      }
-
-      return Promise.reject();
+      return Promise.resolve(counter < 0)
     }
   ).then(
     () => expect(Q.metrics.iteration).toBe(5)
