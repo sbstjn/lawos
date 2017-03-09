@@ -9,7 +9,6 @@
     "url": "https://github.com/sbstjn/lawos.git"
   },
   "scripts": {
-    "pretest": "npm run lint",
     "test": "./node_modules/.bin/jest test",
     "test:cover": "./node_modules/.bin/jest test --coverage",
     "test:watch": "./node_modules/.bin/jest test --watch --notify",
