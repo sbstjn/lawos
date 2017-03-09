@@ -26,7 +26,7 @@ class Lawos {
       {
         QueueUrl: this.queueUrl,
         ReceiptHandle: id,
-      },
+      }
     ).promise();
   }
 
@@ -36,15 +36,15 @@ class Lawos {
         MaxNumberOfMessages: this.maxMessages,
         MessageAttributeNames: ['All'],
         QueueUrl: this.queueUrl,
-      },
+      }
     ).promise().then(
       data => {
         this.metrics.iteration += 1;
 
         return data;
-      },
+      }
     ).then(
-      list => list && list.Messages || this.quit(),
+      list => list && list.Messages || this.quit()
     );
   }
 
@@ -67,20 +67,20 @@ class Lawos {
           this.metrics.processed += 1;
 
           return this.handler.item(item);
-        },
-      ),
+        }
+      )
     ).then(
-      () => list,
+      () => list
     ).then(
-      this.handler.list,
+      this.handler.list
     ).then(
       Promise.all(
         list.map(
-          item => this.delete(item.ReceiptHandle),
-        ),
-      ),
+          item => this.delete(item.ReceiptHandle)
+        )
+      )
     ).then(
-      () => list,
+      () => list
     );
   }
 
@@ -96,13 +96,13 @@ class Lawos {
         }
 
         return this.load().then(
-          list => this.process(list),
+          list => this.process(list)
         ).then(
-          () => this.work(condition),
+          () => this.work(condition)
         );
-      },
+      }
     ).catch(
-      () => this.quit(),
+      () => this.quit()
     );
   }
 }
