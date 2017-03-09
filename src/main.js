@@ -21,35 +21,36 @@ class Lawos {
     }
   }
 
-  __invoke(arn, data) {
+  invokeLambda(arn, data) {
     return new Promise(done => {
       this.aws.lambda.invoke(
         {
           FunctionName: arn,
           InvocationType: 'Event',
-          LogType: 'None'
+          LogType: 'None',
+          Payload: JSON.stringify(data)
         },
         (err, res) => {
-          done(res);
+          done(err || res);
         }
       );
     })
   }
 
-  __item(item) {
-    if (typeof this.handler.item === 'string') {
-      return this.__invoke(this.handler.item, item);
+  handleKey(key, data) {
+    if (typeof this.handler[key] === 'string') {
+      return this.invokeLambda(this.handler[key], data);
     }
 
-    return this.handler.item(item);
+    return this.handler[key](data);
   }
 
-  __list(list) {
-    if (typeof this.handler.list === 'string') {
-      return this.__invoke(this.handler.list, list);
-    }
+  handleItem(item) {
+    return this.handleKey('item', item)
+  }
 
-    return this.handler.list(list);
+  handleList(list) {
+    return this.handleKey('list', list)
   }
 
   delete(id) {
@@ -97,13 +98,13 @@ class Lawos {
         item => {
           this.metrics.processed += 1;
 
-          return this.__item(item);
+          return this.handleItem(item);
         }
       )
     ).then(
       () => list
     ).then(
-      list => this.__list(list)
+      list => this.handleList(list)
     ).then(
       Promise.all(
         list.map(

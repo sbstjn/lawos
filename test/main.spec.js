@@ -392,23 +392,15 @@ it('trigger Lambda task to process message', () => {
 /*
 it('process real queue', () => {
   const AWS = require('aws-sdk');
+
+  const Lambda = new AWS.Lambda({apiVersion: '2015-03-31'});
   const SQS = new AWS.SQS({apiVersion: '2012-11-05'});
 
-  const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/xYz/test', SQS);
+  const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/xYz/lawos-test', SQS, Lambda);
 
-  Q.item(item => new Promise(done => {
-    console.log(item.MessageId);
+  Q.item('dev-lawos-serverless-task');
 
-    done();
-  }));
-
-  Q.list(list => new Promise(done => {
-    console.log(list.length);
-
-    done();
-  }));
-
-  Q.work(() => Promise.resolve()).then(
+  return Q.work(() => Promise.resolve()).then(
     console.log
   );
 }); */
