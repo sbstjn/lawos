@@ -1,131 +1,131 @@
-'use strict';
+'use strict'
 
-const Lawos = require('../');
+const Lawos = require('../')
 
 it('is initialized with queue URL', () => {
-  const Q = new Lawos('http://example.com');
+  const Q = new Lawos('http://example.com')
 
-  expect(Q.queueUrl).toBe('http://example.com');
-});
+  expect(Q.queueUrl).toBe('http://example.com')
+})
 
 it('fails without queue URL', () => {
   expect(() => new Lawos()).toThrow('')
 })
 
 it('can has default handler', () => {
-  const Q = new Lawos('http://example.com');
+  const Q = new Lawos('http://example.com')
 
   return Promise.all([
     Q.handler.item().then(data => expect(data).toBeUndefined()),
-    Q.handler.list().then(data => expect(data).toBeUndefined()),
+    Q.handler.list().then(data => expect(data).toBeUndefined())
   ])
-});
+})
 
 it('can set item handler', () => {
-  const Q = new Lawos('http://example.com');
+  const Q = new Lawos('http://example.com')
 
   Q.item(
-    item => new Promise(done => {
-      done('test');
+    item => new Promise(resolve => {
+      resolve('test')
     })
-  );
+  )
 
   return Q.handler.item().then(
     data => expect(data).toBe('test')
-  );
-});
+  )
+})
 
 it('can set list handler', () => {
-  const Q = new Lawos('http://example.com');
+  const Q = new Lawos('http://example.com')
 
   Q.list(
-    list => new Promise(done => {
-      done('test');
+    list => new Promise(resolve => {
+      resolve('test')
     })
-  );
+  )
 
   return Q.handler.list().then(
     data => expect(data).toBe('test')
-  );
-});
+  )
+})
 
 it('can configure SQS handler', () => {
   const Q = new Lawos('http://example.com', {
     test: true
-  });
+  })
 
-  expect(Q.aws.sqs.test).toBeTruthy();
-});
+  expect(Q.aws.sqs.test).toBeTruthy()
+})
 
 it('calls receiveMessage', () => {
-  var counterReceive = 0;
+  var counterReceive = 0
 
   const Q = new Lawos('http://example.com', {
     receiveMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterReceive++;
+        promise: () => new Promise(resolve => {
+          counterReceive++
 
-          done();
+          resolve()
         })
       }
     }
-  });
+  })
 
   return Q.load().then(
     data => expect(counterReceive).toBe(1)
-  );
-});
+  )
+})
 
 it('calls deleteMessage', () => {
   const Q = new Lawos('http://example.com', {
     deleteMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          done('test');
+        promise: () => new Promise(resolve => {
+          resolve('test')
         })
       }
     }
-  });
+  })
 
   return Q.delete().then(
     data => expect(data).toBe('test')
-  );
-});
+  )
+})
 
 it('stops with condition resolve(true)', () => {
-  let counterCalled = 0;
-  let counterDelete = 0;
-  let counterProcessed = 0;
+  let counterCalled = 0
+  let counterDelete = 0
+  let counterProcessed = 0
 
   const Q = new Lawos('http://example.com', {
     receiveMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterCalled += 1;
+        promise: () => new Promise(resolve => {
+          counterCalled += 1
 
-          done({Messages: [{}, {}]});
+          resolve({Messages: [{}, {}]})
         })
       }
     },
     deleteMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterDelete += 1;
+        promise: () => new Promise(resolve => {
+          counterDelete += 1
 
-          done();
+          resolve()
         })
       }
     }
-  });
+  })
 
   Q.item(
-    item => new Promise(done => {
-      counterProcessed += 1;
+    item => new Promise(resolve => {
+      counterProcessed += 1
 
-      done();
+      resolve()
     })
-  );
+  )
 
   return Q.work(
     () => Promise.resolve(true)
@@ -139,128 +139,100 @@ it('stops with condition resolve(true)', () => {
     () => expect(counterDelete).toBe(0)
   ).then(
     () => expect(counterCalled).toBe(0)
-  );
-});
+  )
+})
 
 it('stops with condition reject()', () => {
-  let counterCalled = 0;
-  let counterDelete = 0;
+  let counterDelete = 0
 
   const Q = new Lawos('http://example.com', {
     receiveMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterCalled += 1;
-
-          done({Messages: [{}, {}]});
-        })
+        promise: () => new Promise(resolve => resolve({Messages: [{}, {}]}))
       }
     },
     deleteMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterDelete += 1;
+        promise: () => new Promise(resolve => {
+          counterDelete += 1
 
-          done();
+          resolve()
         })
       }
     }
-  });
+  })
 
   Q.item(
-    item => new Promise(done => {
-      counterProcessed += 1;
-
-      done();
+    item => new Promise(resolve => {
+      resolve()
     })
-  );
+  )
 
   return Q.work(
-    () => Promise.reject()
+    () => Promise.reject(new Error('Error'))
   ).then(
     () => expect(Q.metrics.processed).toBe(0)
   ).then(
     () => expect(counterDelete).toBe(0)
-  );
-});
+  )
+})
 
 it('continues continues condition resolve(false)', () => {
-  let counterCalled = 0;
-  let counterDelete = 0;
-  let counterProcessed = 0;
-
-  let data = [[{}, {}]];
+  let data = [[{}, {}]]
 
   const Q = new Lawos('http://example.com', {
     receiveMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterCalled += 1;
-
-          done({Messages: data.pop()});
-        })
+        promise: () => new Promise(resolve => resolve({ Messages: data.pop() }))
       }
     },
     deleteMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterDelete += 1;
-
-          done();
-        })
+        promise: () => new Promise(resolve => resolve())
       }
     }
-  });
+  })
 
   Q.item(
-    item => new Promise(done => {
-      counterProcessed += 1;
-
-      done();
+    item => new Promise(resolve => {
+      resolve()
     })
-  );
+  )
 
   return Q.work(
     () => Promise.resolve()
   ).then(
     () => expect(Q.metrics.processed).toBe(2)
-  );
-});
+  )
+})
 
 it('continues continues condition resolve()', () => {
-  let counterCalled = 0;
-  let counterDelete = 0;
+  let counterDelete = 0
 
-  let data = [[{}, {}]];
+  let data = [[{}, {}]]
 
   const Q = new Lawos('http://example.com', {
     receiveMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterCalled += 1;
-
-          done({Messages: data.pop()});
-        })
+        promise: () => new Promise(resolve => resolve({Messages: data.pop()}))
       }
     },
     deleteMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterDelete += 1;
+        promise: () => new Promise(resolve => {
+          counterDelete += 1
 
-          done();
+          resolve()
         })
       }
     }
-  });
+  })
 
   Q.item(
-    item => new Promise(done => {
-      counterProcessed += 1;
-
-      done();
+    item => new Promise(resolve => {
+      resolve()
     })
-  );
+  )
 
   return Q.work(
     () => Promise.resolve()
@@ -268,56 +240,56 @@ it('continues continues condition resolve()', () => {
     () => expect(Q.metrics.processed).toBe(2)
   ).then(
     () => expect(counterDelete).toBe(2)
-  );
-});
+  )
+})
 
 it('work runs condition check and loads data', () => {
-  let counter = 5;
-  let counterCalled = 0;
-  let counterProcessed = 0;
-  let counterProcessedList = 0;
-  let counterDelete = 0;
+  let counter = 5
+  let counterCalled = 0
+  let counterProcessed = 0
+  let counterProcessedList = 0
+  let counterDelete = 0
 
   const Q = new Lawos('http://example.com', {
     receiveMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterCalled += 1;
+        promise: () => new Promise(resolve => {
+          counterCalled += 1
 
-          done({Messages: [{}, {}]});
+          resolve({Messages: [{}, {}]})
         })
       }
     },
     deleteMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterDelete += 1;
+        promise: () => new Promise(resolve => {
+          counterDelete += 1
 
-          done();
+          resolve()
         })
       }
     }
-  });
+  })
 
   Q.item(
-    item => new Promise(done => {
-      counterProcessed += 1;
+    item => new Promise(resolve => {
+      counterProcessed += 1
 
-      done();
+      resolve()
     })
-  );
+  )
 
   Q.list(
-    list => new Promise(done => {
-      counterProcessedList += 1;
+    list => new Promise(resolve => {
+      counterProcessedList += 1
 
-      done();
+      resolve()
     })
-  );
+  )
 
   return Q.work(
     () => {
-      counter -= 1;
+      counter -= 1
       return Promise.resolve(counter < 0)
     }
   ).then(
@@ -332,47 +304,46 @@ it('work runs condition check and loads data', () => {
     () => expect(counterDelete).toBe(10)
   ).then(
     () => expect(counterProcessedList).toBe(5)
-  );
-});
+  )
+})
 
 it('trigger Lambda task to process message', () => {
-  let counterCalled = 0;
-  let counterDelete = 0;
-  let counterProcessed = 0;
-  let counterLambda = 0;
+  let counterCalled = 0
+  let counterDelete = 0
+  let counterLambda = 0
 
-  let data = [[{}, {}, {}]];
+  let data = [[{}, {}, {}]]
 
   const Q = new Lawos('http://example.com', {
     receiveMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterCalled += 1;
+        promise: () => new Promise(resolve => {
+          counterCalled += 1
 
-          done({Messages: data.pop()});
+          resolve({Messages: data.pop()})
         })
       }
     },
     deleteMessage: params => {
       return {
-        promise: () => new Promise(done => {
-          counterDelete += 1;
+        promise: () => new Promise(resolve => {
+          counterDelete += 1
 
-          done();
+          resolve()
         })
       }
     }
   }, {
     invoke: (params, callback) => {
-      counterLambda += 1;
+      counterLambda += 1
 
-      expect(params.FunctionName).toBe('fake-function-name');
+      expect(params.FunctionName).toBe('fake-function-name')
 
-      callback(null, {done: true});
+      callback(null, {done: true})
     }
-  });
+  })
 
-  Q.item('fake-function-name');
+  Q.item('fake-function-name')
 
   return Q.work(
     () => Promise.resolve()
@@ -386,8 +357,8 @@ it('trigger Lambda task to process message', () => {
     () => expect(counterDelete).toBe(3)
   ).then(
     () => expect(counterCalled).toBe(2)
-  );
-});
+  )
+})
 
 /*
 it('process real queue', () => {
@@ -396,7 +367,7 @@ it('process real queue', () => {
   const Lambda = new AWS.Lambda({apiVersion: '2015-03-31'});
   const SQS = new AWS.SQS({apiVersion: '2012-11-05'});
 
-  const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/xYz/lawos-test', SQS, Lambda);
+  const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com/AccountID/queueName', SQS, Lambda);
 
   Q.item('dev-lawos-serverless-task');
 

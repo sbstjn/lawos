@@ -1,31 +1,31 @@
-'use strict';
+'use strict'
 
 class Lawos {
-  constructor(queueUrl, sqs, lambda) {
-    this.maxMessages = 10;
-    this.queueUrl = queueUrl;
+  constructor (queueUrl, sqs, lambda) {
+    this.maxMessages = 10
+    this.queueUrl = queueUrl
     this.aws = {
       sqs: sqs,
       lambda: lambda
-    };
+    }
 
     this.handler = {
       item: () => Promise.resolve(),
-      list: () => Promise.resolve(),
-    };
+      list: () => Promise.resolve()
+    }
 
     this.metrics = {
       processed: 0,
-      iteration: 0,
-    };
+      iteration: 0
+    }
 
     if (!this.queueUrl) {
-      throw new Error('Missing URL for SQS Queue');
+      throw new Error('Missing URL for SQS Queue')
     }
   }
 
-  invokeLambda(arn, data) {
-    return new Promise(done => {
+  invokeLambda (arn, data) {
+    return new Promise(resolve => {
       this.aws.lambda.invoke(
         {
           FunctionName: arn,
@@ -34,74 +34,80 @@ class Lawos {
           Payload: JSON.stringify(data)
         },
         (err, res) => {
-          done(err || res);
+          resolve(err || res)
         }
-      );
-    });
+      )
+    })
   }
 
-  handleKey(key, data) {
+  handleKey (key, data) {
     if (typeof this.handler[key] === 'string') {
-      return this.invokeLambda(this.handler[key], data);
+      return this.invokeLambda(this.handler[key], data)
     }
 
-    return this.handler[key](data);
+    return this.handler[key](data)
   }
 
-  handleItem(item) {
-    return this.handleKey('item', item);
+  handleItem (item) {
+    return this.handleKey('item', item)
   }
 
-  handleList(list) {
-    return this.handleKey('list', list);
+  handleList (list) {
+    return this.handleKey('list', list)
   }
 
-  delete(id) {
+  delete (id) {
     return this.aws.sqs.deleteMessage(
       {
         QueueUrl: this.queueUrl,
-        ReceiptHandle: id,
+        ReceiptHandle: id
       }
-    ).promise();
+    ).promise()
   }
 
-  load() {
+  load () {
     return this.aws.sqs.receiveMessage(
       {
         MaxNumberOfMessages: this.maxMessages,
         MessageAttributeNames: ['All'],
-        QueueUrl: this.queueUrl,
+        QueueUrl: this.queueUrl
       }
     ).promise().then(
       data => {
-        this.metrics.iteration += 1;
+        this.metrics.iteration += 1
 
-        return data;
+        return data
       }
     ).then(
-      list => list && list.Messages || this.quit()
-    );
+      list => {
+        if (list && list.Messages) {
+          return list.Messages
+        }
+
+        this.quit()
+      }
+    )
   }
 
-  list(func) {
-    this.handler.list = func;
+  list (func) {
+    this.handler.list = func
 
-    return this;
+    return this
   }
 
-  item(func) {
-    this.handler.item = func;
+  item (func) {
+    this.handler.item = func
 
-    return this;
+    return this
   }
 
-  process(list) {
+  process (list) {
     return Promise.all(
       list.map(
         item => {
-          this.metrics.processed += 1;
+          this.metrics.processed += 1
 
-          return this.handleItem(item);
+          return this.handleItem(item)
         }
       )
     ).then(
@@ -116,30 +122,30 @@ class Lawos {
       )
     ).then(
       () => list
-    );
+    )
   }
 
-  quit() {
-    return Promise.resolve(this.metrics);
+  quit () {
+    return Promise.resolve(this.metrics)
   }
 
-  work(condition) {
+  work (condition) {
     return condition().then(
       stop => {
         if (stop) {
-          return this.quit();
+          return this.quit()
         }
 
         return this.load().then(
           list => this.process(list)
         ).then(
           () => this.work(condition)
-        );
+        )
       }
     ).catch(
       () => this.quit()
-    );
+    )
   }
 }
 
-module.exports = Lawos;
+module.exports = Lawos
