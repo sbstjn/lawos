@@ -7,15 +7,16 @@
 
 Library to process messages from an Amazon SQS queue with an AWS Lambda worker function or your favorite other JavaScript environment. Works fine with [Serverless](https://github.com/sbstjn/lawos-serverless) …
 
+## Examples
+
+- [Serverless Amazon SQS Worker with AWS Lambda](https://sbstjn.com/serverless-sqs-worker-with-aws-lambda.html)
+- [Basic usage with AWS Lambda and Serverless](https://github.com/sbstjn/lawos-serverless)
+
 ## Install
 
 ```bash
 $ > npm install lawos
 ```
-
-## Example
-
-See [lawos-serverless](https://github.com/sbstjn/lawos-serverless) for an example of Lawos using [Serverless](http://serverless.com).
 
 ## Usage
 
