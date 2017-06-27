@@ -375,3 +375,30 @@ it('process real queue', () => {
     console.log
   );
 }); */
+
+it('rejects if any item() callback rejects', () => {
+  const msgs = [
+    { ReceiptHandle: 'a' },
+    { ReceiptHandle: 'b' },
+    { ReceiptHandle: 'c' }
+  ]
+
+  const Q = new Lawos('http://example.com', {})
+  Q.delete = jest.fn().mockReturnValue(Promise.resolve())
+  Q.handleList = jest.fn().mockReturnValue(Promise.resolve())
+  Q.load = jest.fn().mockReturnValue(Promise.resolve(msgs))
+
+  Q.item(item => {
+    if (item.ReceiptHandle === 'c') {
+      return Promise.reject(new Error('some error'))
+    }
+    return Promise.resolve()
+  })
+
+  return Q.work(() => Promise.resolve(false)).then((stats) => {
+    expect(stats.processed).toBe(3)
+    expect(stats.iteration).toBe(0)
+    expect(Q.handleList).not.toHaveBeenCalled()
+    expect(Q.delete).not.toHaveBeenCalled()
+  })
+})

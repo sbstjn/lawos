@@ -115,7 +115,7 @@ class Lawos {
     ).then(
       data => this.handleList(data)
     ).then(
-      Promise.all(
+      () => Promise.all(
         list.map(
           item => this.delete(item.ReceiptHandle)
         )
