@@ -31,11 +31,6 @@
     "standard": "^9.0.2"
   },
   "standard": {
-    "globals": [
-      "it",
-      "expect",
-      "jest"
-    ],
     "envs": [
       "node",
       "jest"
