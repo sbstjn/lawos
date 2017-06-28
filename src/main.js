@@ -16,7 +16,8 @@ class Lawos {
 
     this.metrics = {
       processed: 0,
-      iteration: 0
+      iteration: 0,
+      failed: 0
     }
 
     if (!this.queueUrl) {
@@ -73,18 +74,13 @@ class Lawos {
         QueueUrl: this.queueUrl
       }
     ).promise().then(
-      data => {
-        this.metrics.iteration += 1
-
-        return data
-      }
-    ).then(
       list => {
+        this.metrics.iteration += 1
         if (list && list.Messages) {
           return list.Messages
         }
 
-        this.quit()
+        return this.quit()
       }
     )
   }
@@ -102,26 +98,45 @@ class Lawos {
   }
 
   process (list) {
+    let results = []
     return Promise.all(
       list.map(
         item => {
           this.metrics.processed += 1
 
-          return this.handleItem(item)
+          return this.handleItem(item).then(result => {
+            return {
+              item,
+              result,
+              success: true
+            }
+          }).catch(error => {
+            this.metrics.failed += 1
+
+            return {
+              item,
+              error,
+              success: false
+            }
+          })
         }
       )
     ).then(
-      () => list
+      itemResults => {
+        results = itemResults
+      }
     ).then(
-      data => this.handleList(data)
+      // I'm unclear about the use case of handling the whole list vs item by item
+      () => this.handleList(results.map(r => r.item))
     ).then(
       () => Promise.all(
-        list.map(
-          item => this.delete(item.ReceiptHandle)
+        results.map(
+          // only delete successful items
+          result => result.success ? this.delete(result.item.ReceiptHandle) : null
         )
       )
     ).then(
-      () => list
+      () => results
     )
   }
 
