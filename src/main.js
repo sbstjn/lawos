@@ -156,9 +156,16 @@ class Lawos {
         ).then(
           () => this.work(condition)
         )
+          .catch(e => {
+            // make it bubble up
+            throw e
+          })
       }
     ).catch(
-      () => this.quit()
+      err => {
+        this.metrics.queueError = err
+        this.quit()
+      }
     )
   }
 }

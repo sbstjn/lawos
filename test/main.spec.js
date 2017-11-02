@@ -397,7 +397,7 @@ it('only deletes resolved items', () => {
   })
 
   Q.item(item => {
-    if (item.ReceiptHandle === 'c') {
+    if (item.ReceiptHandle === 'b') {
       return Promise.reject(new Error('some error'))
     }
     return Promise.resolve()
@@ -413,7 +413,7 @@ it('only deletes resolved items', () => {
     expect(stats.iteration).toBe(1)
     expect(Q.delete).toHaveBeenCalledTimes(2)
     expect(Q.delete).toHaveBeenCalledWith('a')
-    expect(Q.delete).toHaveBeenCalledWith('b')
-    expect(Q.delete).not.toHaveBeenCalledWith('c')
+    expect(Q.delete).not.toHaveBeenCalledWith('b')
+    expect(Q.delete).toHaveBeenCalledWith('c')
   })
 })
