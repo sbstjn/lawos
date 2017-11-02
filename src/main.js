@@ -83,6 +83,10 @@ class Lawos {
         return this.quit()
       }
     )
+      .catch(e => {
+        console.error('Loaws error', e)
+        throw e
+      })
   }
 
   list (func) {
