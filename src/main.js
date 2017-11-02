@@ -84,7 +84,6 @@ class Lawos {
       }
     )
       .catch(e => {
-        console.error('Loaws error', e)
         throw e
       })
   }
@@ -168,7 +167,7 @@ class Lawos {
     ).catch(
       err => {
         this.metrics.queueError = err
-        this.quit()
+        return this.quit()
       }
     )
   }
