@@ -9,11 +9,11 @@
     "url": "https://github.com/sbstjn/lawos.git"
   },
   "scripts": {
-    "test": "./node_modules/.bin/jest test",
-    "test:cover": "./node_modules/.bin/jest test --coverage",
-    "test:watch": "./node_modules/.bin/jest test --watch --notify",
+    "test": "jest test",
+    "test:cover": "jest test --coverage",
+    "test:watch": "jest test --watch --notify",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "lint": "./node_modules/.bin/standard | ./node_modules/.bin/snazzy"
+    "lint": "standard | snazzy"
   },
   "keywords": [
     "aws",

@@ -9,6 +9,8 @@ class Lawos {
       lambda: lambda
     }
 
+    this.done = false
+
     this.handler = {
       item: () => Promise.resolve(),
       list: () => Promise.resolve()
@@ -79,8 +81,8 @@ class Lawos {
         if (list && list.Messages) {
           return list.Messages
         }
-
-        return this.quit()
+        this.done = true
+        return []
       }
     )
       .catch(e => {
@@ -124,23 +126,23 @@ class Lawos {
           })
         }
       )
-    ).then(
-      itemResults => {
+    )
+      .then(itemResults => {
         results = itemResults
       }
-    ).then(
+    )
+      .then(
       // I'm unclear about the use case of handling the whole list vs item by item
       () => this.handleList(results.map(r => r.item))
-    ).then(
-      () => Promise.all(
+    )
+      .then(() => Promise.all(
         results.map(
           // only delete successful items
           result => result.success ? this.delete(result.item.ReceiptHandle) : null
         )
       )
-    ).then(
-      () => results
     )
+      .then(() => results)
   }
 
   quit () {
@@ -150,7 +152,7 @@ class Lawos {
   work (condition) {
     return condition().then(
       stop => {
-        if (stop) {
+        if (stop || this.done) {
           return this.quit()
         }
 
