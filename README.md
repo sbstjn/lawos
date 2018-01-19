@@ -37,7 +37,7 @@ Q.item(
 
 module.exports.handler = function(event, context, callback) {
   Q.work(
-    () = Promise.resolve(context.getRemainingTimeInMillis() < 500)
+    () => Promise.resolve(context.getRemainingTimeInMillis() < 500)
   ).then(
     data => {
       callback(null, data);
@@ -63,7 +63,7 @@ Q.list(
 
 module.exports.handler = function(event, context, callback) {
   Q.work(
-    () = Promise.resolve(context.getRemainingTimeInMillis() < 500)
+    () => Promise.resolve(context.getRemainingTimeInMillis() < 500)
   ).then(
     data => {
       callback(null, data);
@@ -88,7 +88,7 @@ Q.item('fake-function-name');
 
 module.exports.handler = function(event, context, callback) {
   Q.work(
-    () = Promise.resolve(context.getRemainingTimeInMillis() < 500)
+    () => Promise.resolve(context.getRemainingTimeInMillis() < 500)
   ).then(
     data => {
       callback(null, data);
