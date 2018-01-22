@@ -9,6 +9,8 @@ class Lawos {
       lambda: lambda
     }
 
+    this.done = false
+
     this.handler = {
       item: () => Promise.resolve(),
       list: () => Promise.resolve()
@@ -16,7 +18,8 @@ class Lawos {
 
     this.metrics = {
       processed: 0,
-      iteration: 0
+      iteration: 0,
+      failed: 0
     }
 
     if (!this.queueUrl) {
@@ -73,20 +76,18 @@ class Lawos {
         QueueUrl: this.queueUrl
       }
     ).promise().then(
-      data => {
-        this.metrics.iteration += 1
-
-        return data
-      }
-    ).then(
       list => {
+        this.metrics.iteration += 1
         if (list && list.Messages) {
           return list.Messages
         }
-
-        this.quit()
+        this.done = true
+        return []
       }
     )
+      .catch(e => {
+        throw e
+      })
   }
 
   list (func) {
@@ -102,27 +103,46 @@ class Lawos {
   }
 
   process (list) {
+    let results = []
     return Promise.all(
       list.map(
         item => {
           this.metrics.processed += 1
 
-          return this.handleItem(item)
+          return this.handleItem(item).then(result => {
+            return {
+              item,
+              result,
+              success: true
+            }
+          }).catch(error => {
+            this.metrics.failed += 1
+
+            return {
+              item,
+              error,
+              success: false
+            }
+          })
         }
       )
-    ).then(
-      () => list
-    ).then(
-      data => this.handleList(data)
-    ).then(
-      Promise.all(
-        list.map(
-          item => this.delete(item.ReceiptHandle)
+    )
+      .then(itemResults => {
+        results = itemResults
+      }
+    )
+      .then(
+      // I'm unclear about the use case of handling the whole list vs item by item
+      () => this.handleList(results.map(r => r.item))
+    )
+      .then(() => Promise.all(
+        results.map(
+          // only delete successful items
+          result => result.success ? this.delete(result.item.ReceiptHandle) : null
         )
       )
-    ).then(
-      () => list
     )
+      .then(() => results)
   }
 
   quit () {
@@ -132,7 +152,7 @@ class Lawos {
   work (condition) {
     return condition().then(
       stop => {
-        if (stop) {
+        if (stop || this.done) {
           return this.quit()
         }
 
@@ -141,9 +161,16 @@ class Lawos {
         ).then(
           () => this.work(condition)
         )
+          .catch(e => {
+            // make it bubble up
+            throw e
+          })
       }
     ).catch(
-      () => this.quit()
+      err => {
+        this.metrics.queueError = err
+        return this.quit()
+      }
     )
   }
 }
