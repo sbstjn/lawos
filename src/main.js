@@ -1,9 +1,23 @@
 'use strict'
 
 class Lawos {
-  constructor (queueUrl, sqs, lambda) {
+  constructor (queueUrlOrOptions, sqs, lambda, messagesPerIteration) {
+    if (!queueUrlOrOptions) {
+      throw new Error('No SQS Queue URL or options object')
+    }
+
     this.maxMessages = 10
-    this.queueUrl = queueUrl
+
+    if (typeof queueUrlOrOptions === 'object') {
+      this.messagesPerIteration(queueUrlOrOptions.messagesPerIteration)
+      this.queueUrl = queueUrlOrOptions.queueUrl
+      this.sqs = queueUrlOrOptions.sqs
+      this.lambda = queueUrlOrOptions.lambda
+    } else {
+      this.messagesPerIteration(messagesPerIteration)
+      this.queueUrl = queueUrlOrOptions
+    }
+
     this.aws = {
       sqs: sqs,
       lambda: lambda
@@ -22,6 +36,13 @@ class Lawos {
     if (!this.queueUrl) {
       throw new Error('Missing URL for SQS Queue')
     }
+  }
+
+  messagesPerIteration (numberOfMessages) {
+    if (numberOfMessages >= 1 && numberOfMessages <= 10) {
+      this.maxMessages = numberOfMessages
+    }
+    return this
   }
 
   invokeLambda (arn, data) {
