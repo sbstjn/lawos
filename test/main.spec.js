@@ -8,8 +8,19 @@ it('is initialized with queue URL', () => {
   expect(Q.queueUrl).toBe('http://example.com')
 })
 
+it('is initialized with object', () => {
+  const Q = new Lawos({
+    queueUrl: 'http://example.com'
+  })
+  expect(Q.queueUrl).toBe('http://example.com')
+})
+
+it('fails without options', () => {
+  expect(() => new Lawos()).toThrow(/options/)
+})
+
 it('fails without queue URL', () => {
-  expect(() => new Lawos()).toThrow('')
+  expect(() => new Lawos({ queueUrl: undefined })).toThrow(/missing/i)
 })
 
 it('can has default handler', () => {
@@ -19,6 +30,13 @@ it('can has default handler', () => {
     Q.handler.item().then(data => expect(data).toBeUndefined()),
     Q.handler.list().then(data => expect(data).toBeUndefined())
   ])
+})
+
+it('can set messages per iteration', () => {
+  const Q = new Lawos('http://example.com')
+  expect(Q.messagesPerIteration(0).maxMessages).toEqual(10)
+  expect(Q.messagesPerIteration(11).maxMessages).toEqual(10)
+  expect(Q.messagesPerIteration(5).maxMessages).toEqual(5)
 })
 
 it('can set item handler', () => {

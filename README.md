@@ -97,6 +97,22 @@ module.exports.handler = function(event, context, callback) {
 };
 ```
 
+### Create instance using options object or arguments
+
+```js
+const Q = new Lawos('https://sqs.eu-west-1.amazonaws.com …', SQS, Lambda, 10)
+
+// ... or ...
+
+const Q = new Lawos({
+  queueUrl: 'https://sqs.eu-west-1.amazonaws.com …',
+  sqs: SQS,
+  lambda: Lambda,
+  messagesPerIteration: 10
+})
+
+```
+
 ## License
 
 Feel free to use the code, it's released using the [MIT license](https://github.com/sbstjn/lawos/blob/master/LICENSE.md).
